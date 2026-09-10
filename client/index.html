@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>FileTransfer Pro v2 — High-Speed Cross-Platform Sharing</title>
+    
+    <!-- PWA & Mobile Meta Tags -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FileTransfer">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/public/icons/icon.svg">
+    <link rel="apple-touch-icon" href="/public/icons/icon.svg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/public/css/style.css">
+    <link rel="stylesheet" href="/public/css/theme.css">
+    <link rel="stylesheet" href="/public/css/responsive.css">
+</head>
+<body class="dark-theme">
+    <!-- Ambient Background Blobs -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+
+    <!-- Main Container -->
+    <div class="app-layout">
+        <!-- Top Navigation Bar -->
+        <header class="app-header">
+            <div class="brand-group">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        <polygon points="12 11 12 17 16 14 12 11" fill="currentColor"></polygon>
+                    </svg>
+                </div>
+                <div class="brand-info">
+                    <div class="brand-title-wrap">
+                        <span class="brand-name">FileTransfer</span>
+                        <span class="pro-badge">PRO v2</span>
+                    </div>
+                    <span class="brand-sub">Universal LAN Hub</span>
+                </div>
+            </div>
+
+            <!-- Network Status Pill -->
+            <div class="header-center-info">
+                <div class="status-pill online" id="statusPill" title="Connected to LAN Hub">
+                    <span class="status-dot"></span>
+                    <span class="status-text" id="statusText">LAN Connected</span>
+                </div>
+                <div class="ip-chip" id="ipChip" title="Click to copy host URL">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    </svg>
+                    <span id="hostAddress">Discovering...</span>
+                </div>
+                <div class="devices-badge" id="devicesBadge">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                        <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                    </svg>
+                    <span id="onlineCount">1 Device</span>
+                </div>
+            </div>
+
+            <!-- Right Controls -->
+            <div class="header-actions">
+                <button class="icon-btn qr-trigger" id="qrBtn" title="Connect Phone / Tablet via QR Code">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <span class="btn-label">QR Connect</span>
+                </button>
+
+                <button class="icon-btn" id="soundToggle" title="Toggle Sound FX">
+                    <span id="soundIcon">🔔</span>
+                </button>
+
+                <button class="icon-btn" id="themeToggle" title="Switch Theme (Dark / Light / OLED)">
+                    <span id="themeIcon">🌙</span>
+                </button>
+
+                <button class="icon-btn pwa-btn" id="pwaInstallBtn" title="Install as Mobile/Desktop App" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span class="btn-label">Install App</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Body Content -->
+        <main class="app-content">
+            <!-- Storage & Device Overview Card -->
+            <section class="storage-overview card-glass">
+                <div class="storage-info-wrap">
+                    <div class="storage-stat-item">
+                        <span class="stat-label">Total Files</span>
+                        <span class="stat-val" id="totalFilesCount">0</span>
+                    </div>
+                    <div class="storage-divider"></div>
+                    <div class="storage-stat-item">
+                        <span class="stat-label">Storage Used</span>
+                        <span class="stat-val" id="totalStorageSize">0 Bytes</span>
+                    </div>
+                    <div class="storage-divider"></div>
+                    <div class="storage-stat-item">
+                        <span class="stat-label">Transfer Speed</span>
+                        <span class="stat-val highlight" id="activeSpeed">0 MB/s</span>
+                    </div>
+                </div>
+                <!-- Visual Storage Distribution Bar -->
+                <div class="storage-bar-track" id="storageBarTrack">
+                    <div class="storage-bar-seg seg-image" id="segImage" style="width: 0%" title="Images"></div>
+                    <div class="storage-bar-seg seg-video" id="segVideo" style="width: 0%" title="Videos"></div>
+                    <div class="storage-bar-seg seg-audio" id="segAudio" style="width: 0%" title="Audio"></div>
+                    <div class="storage-bar-seg seg-doc" id="segDoc" style="width: 0%" title="Documents"></div>
+                    <div class="storage-bar-seg seg-archive" id="segArchive" style="width: 0%" title="Archives"></div>
+                    <div class="storage-bar-seg seg-other" id="segOther" style="width: 0%" title="Others"></div>
+                </div>
+            </section>
+
+            <!-- Hero Upload Drop Area -->
+            <section class="upload-section">
+                <div class="drop-zone card-glass" id="dropZone">
+                    <div class="drop-zone-content">
+                        <div class="upload-radar-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <h2 class="drop-title">Drop Files or Folders Here</h2>
+                        <p class="drop-subtitle">High-speed LAN transfer with zero file size limits</p>
+
+                        <!-- Action Buttons -->
+                        <div class="upload-action-group">
+                            <button class="btn btn-primary" id="selectFilesBtn">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                                </svg>
+                                Choose Files
+                            </button>
+
+                            <button class="btn btn-secondary" id="selectFolderBtn" title="Upload entire folder from PC/Mac">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                Upload Folder
+                            </button>
+
+                            <!-- Mobile Quick Camera Capture -->
+                            <button class="btn btn-secondary mobile-only" id="cameraBtn" title="Take photo or video from mobile camera">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                </svg>
+                                Camera / Gallery
+                            </button>
+                        </div>
+
+                        <!-- Hidden Inputs -->
+                        <input type="file" id="fileInput" multiple hidden>
+                        <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+                        <input type="file" id="cameraInput" accept="image/*,video/*" capture="environment" hidden>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Active Upload Progress Drawer / Cards -->
+            <section class="active-uploads-section" id="activeUploadsSection" style="display: none;">
+                <div class="section-header-compact">
+                    <h3>⚡ Active Transfers (<span id="activeUploadCount">0</span>)</h3>
+                    <button class="text-btn" id="cancelAllUploadsBtn">Cancel All</button>
+                </div>
+                <div class="active-uploads-list" id="activeUploadsList">
+                    <!-- Dynamic upload cards injected here -->
+                </div>
+            </section>
+
+            <!-- Filter Categories & Tabs -->
+            <section class="explorer-section card-glass">
+                <div class="explorer-nav-wrap">
+                    <nav class="category-tabs" id="categoryTabs">
+                        <button class="tab-btn active" data-cat="all">
+                            <span>✨ All Files</span>
+                            <span class="tab-badge" id="catBadgeAll">0</span>
+                        </button>
+                        <button class="tab-btn" data-cat="image">
+                            <span>🖼️ Images</span>
+                            <span class="tab-badge" id="catBadgeImage">0</span>
+                        </button>
+                        <button class="tab-btn" data-cat="video">
+                            <span>🎬 Videos</span>
+                            <span class="tab-badge" id="catBadgeVideo">0</span>
+                        </button>
+                        <button class="tab-btn" data-cat="audio">
+                            <span>🎵 Audio</span>
+                            <span class="tab-badge" id="catBadgeAudio">0</span>
+                        </button>
+                        <button class="tab-btn" data-cat="document">
+                            <span>📄 Docs</span>
+                            <span class="tab-badge" id="catBadgeDoc">0</span>
+                        </button>
+                        <button class="tab-btn" data-cat="archive">
+                            <span>📦 Archives</span>
+                            <span class="tab-badge" id="catBadgeArchive">0</span>
+                        </button>
+                        <button class="tab-btn" data-cat="clipboard">
+                            <span>📋 Clipboard</span>
+                            <span class="tab-badge" id="catBadgeClip">0</span>
+                        </button>
+                    </nav>
+
+                    <!-- Explorer Toolbar -->
+                    <div class="explorer-toolbar">
+                        <!-- Search Box -->
+                        <div class="search-box">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="searchInput" placeholder="Search files... (Press /)">
+                            <button id="clearSearchBtn" class="clear-search-btn" style="display: none;">&times;</button>
+                        </div>
+
+                        <!-- Sort Dropdown -->
+                        <select class="select-styled" id="sortSelect">
+                            <option value="newest">🕒 Newest First</option>
+                            <option value="oldest">⏳ Oldest First</option>
+                            <option value="nameAsc">🔤 Name (A - Z)</option>
+                            <option value="sizeDesc">💾 Largest First</option>
+                            <option value="sizeAsc">🪶 Smallest First</option>
+                        </select>
+
+                        <!-- View Switcher -->
+                        <div class="view-switcher">
+                            <button class="view-btn active" id="gridViewBtn" title="Grid View">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="14" width="7" height="7"></rect>
+                                    <rect x="3" y="14" width="7" height="7"></rect>
+                                </svg>
+                            </button>
+                            <button class="view-btn" id="listViewBtn" title="List View">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Refresh -->
+                        <button class="icon-btn-compact" id="refreshBtn" title="Refresh files">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Files Display Container (Grid / List) -->
+                <div class="files-container grid-view" id="filesContainer">
+                    <!-- Files cards dynamically rendered here -->
+                </div>
+
+                <!-- Clipboard Panel (Active when Clipboard tab selected) -->
+                <div class="clipboard-panel" id="clipboardPanel" style="display: none;">
+                    <div class="clipboard-composer">
+                        <textarea id="clipboardInput" placeholder="Paste text, notes, links, passwords or OTPs here to sync instantly to all connected devices..."></textarea>
+                        <div class="composer-footer">
+                            <span class="char-count" id="charCount">0 characters</span>
+                            <button class="btn btn-primary" id="sendClipboardBtn">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                Send to All Devices
+                            </button>
+                        </div>
+                    </div>
+                    <div class="clipboard-history" id="clipboardHistory">
+                        <!-- Dynamic clipboard snippets -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- =====================================
+             COMPACT PRO DEVELOPER FOOTER
+        ===================================== -->
+        <footer class="app-footer card-glass">
+            <div class="footer-compact-inner">
+                <div class="footer-left">
+                    <div class="dev-avatar-compact-wrap">
+                        <img src="/public/images/creator.jpg" alt="Dipendra Pratap Singh" class="dev-avatar-compact">
+                        <span class="avatar-status-dot-sm" title="Active"></span>
+                    </div>
+                    <div class="dev-meta-compact">
+                        <div class="dev-title-row">
+                            <strong class="dev-full-name">Dipendra Pratap Singh</strong>
+                            <span class="dev-badge-sm">Creator</span>
+                        </div>
+                        <p class="dev-bio-short">Crafting high-speed cross-platform software • 100% Offline LAN • Instant PWA</p>
+                    </div>
+                </div>
+
+                <div class="footer-right">
+                    <div class="footer-chips">
+                        <span class="sys-chip">⚡ FileTransfer Pro v2.0</span>
+                        <span class="sys-chip platform-chip">Win • Mac • Linux • Android • iOS</span>
+                    </div>
+                    <div class="footer-copy">
+                        Crafted with <span class="heart-pulse">❤️</span> by <strong>Dipendra Pratap Singh</strong> © 2026
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Mobile Bottom Navigation Bar (Optimized for one-thumb reach) -->
+        <nav class="mobile-bottom-nav">
+            <button class="mob-nav-btn active" id="mobNavTransfer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                </svg>
+                <span>Upload</span>
+            </button>
+            <button class="mob-nav-btn" id="mobNavFiles">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Files</span>
+            </button>
+            <button class="mob-nav-btn" id="mobNavClipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                <span>Clipboard</span>
+            </button>
+            <button class="mob-nav-btn" id="mobNavQR">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>QR Code</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- QR Connect Modal -->
+    <div class="modal-overlay" id="qrModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>📱 Connect Phone / Tablet</h3>
+                <button class="modal-close" id="closeQrModal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="qr-helper">Point your iPhone, Android or iPad camera at this QR code to connect instantly without installing any app:</p>
+                <div class="qr-frame">
+                    <img id="qrImage" src="" alt="LAN QR Code" class="qr-code-img">
+                </div>
+                <div class="qr-url-box">
+                    <input type="text" id="qrUrlInput" readonly>
+                    <button class="btn btn-primary btn-sm" id="copyQrUrlBtn">Copy Link</button>
+                </div>
+                <div class="qr-interfaces" id="qrInterfacesList">
+                    <!-- Dynamic network interfaces list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Preview Lightbox Modal -->
+    <div class="modal-overlay" id="previewModal" style="display: none;">
+        <div class="modal-card modal-preview">
+            <div class="modal-header">
+                <h3 id="previewTitle">File Preview</h3>
+                <div class="preview-header-actions">
+                    <a id="previewDownloadBtn" href="#" download class="btn btn-primary btn-sm">Download</a>
+                    <button class="modal-close" id="closePreviewModal">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body preview-body" id="previewContainer">
+                <!-- Media dynamically injected: Image / Video / Audio / Text / PDF -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename File Modal -->
+    <div class="modal-overlay" id="renameModal" style="display: none;">
+        <div class="modal-card modal-sm">
+            <div class="modal-header">
+                <h3>✏️ Rename File</h3>
+                <button class="modal-close" id="closeRenameModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="renameInput" class="input-styled" placeholder="Enter new name...">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelRenameBtn">Cancel</button>
+                <button class="btn btn-primary" id="confirmRenameBtn">Rename</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/public/js/app.js"></script>
+    <script src="/public/js/socket.js"></script>
+    <script src="/public/js/upload.js"></script>
+    <script src="/public/js/ui.js"></script>
+</body>
+</html>

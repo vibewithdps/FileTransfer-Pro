@@ -1,0 +1,21 @@
+node_modules/
+uploads/*
+!uploads/.gitkeep
+storage/*
+!storage/.gitkeep
+
+.env
+.env.local
+.DS_Store
+Thumbs.db
+*.log
+
+.vscode/
+.idea/
+coverage/
+
+# Temporary assignment / sample files
+Exercise 1.pdf
+sample.pdf
+demo.js
+nemotron.py

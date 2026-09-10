@@ -1,0 +1,232 @@
+/*
+==========================================================
+    FileTransfer Pro v2
+    Multi-Platform Responsive Stylesheet
+    Optimized for: Windows, Mac, Linux, Android, iOS, iPad
+==========================================================
+*/
+
+/* =====================================
+   TABLETS & SMALL LAPTOPS (<= 1024px)
+===================================== */
+@media (max-width: 1024px) {
+    .app-layout {
+        padding: 16px 20px 90px 20px;
+        gap: 18px;
+    }
+
+    .storage-info-wrap {
+        gap: 20px;
+    }
+
+    .explorer-nav-wrap {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .explorer-toolbar {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 180px;
+    }
+    .search-box input {
+        width: 100%;
+    }
+    .search-box input:focus {
+        width: 100%;
+    }
+
+    .files-container.grid-view {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 14px;
+    }
+}
+
+/* =====================================
+   MOBILE PHONES & SMALL TABLETS (<= 768px)
+===================================== */
+@media (max-width: 768px) {
+    .app-layout {
+        padding: 12px 14px calc(76px + env(safe-area-inset-bottom)) 14px;
+        gap: 14px;
+    }
+
+    .app-header {
+        padding: 12px 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .header-center-info {
+        display: none; /* Hidden on mobile header, available in overview card & QR modal */
+    }
+
+    .btn-label {
+        display: none; /* Show icon only for compact header */
+    }
+
+    .icon-btn {
+        padding: 8px 10px;
+    }
+
+    .storage-overview {
+        padding: 14px 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .storage-info-wrap {
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .stat-val {
+        font-size: 1.1rem;
+    }
+
+    .drop-zone {
+        padding: 32px 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .drop-title {
+        font-size: 1.15rem;
+    }
+
+    .drop-subtitle {
+        font-size: 0.82rem;
+        margin-bottom: 18px;
+    }
+
+    .upload-radar-icon {
+        width: 52px;
+        height: 52px;
+        margin-bottom: 12px;
+    }
+    .upload-radar-icon svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .upload-action-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    .upload-action-group .btn {
+        width: 100%;
+    }
+
+    /* Show Mobile Camera Capture Button on mobile screens */
+    .mobile-only {
+        display: inline-flex !important;
+    }
+
+    .category-tabs {
+        width: 100%;
+        padding-bottom: 8px;
+    }
+
+    .files-container.grid-view {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .file-card {
+        padding: 10px;
+        border-radius: var(--radius-sm);
+        gap: 8px;
+    }
+
+    .file-card-preview {
+        height: 95px;
+    }
+
+    .file-big-icon {
+        font-size: 2rem;
+    }
+
+    .file-title {
+        font-size: 0.8rem;
+    }
+
+    .file-meta-sub {
+        font-size: 0.7rem;
+    }
+
+    /* Show Mobile Bottom Navigation */
+    .mobile-bottom-nav {
+        display: flex;
+    }
+
+    .modal-card {
+        padding: 18px;
+        border-radius: var(--radius-lg);
+    }
+
+    .qr-code-img {
+        width: 180px;
+        height: 180px;
+    }
+
+    .toast-container {
+        bottom: calc(70px + env(safe-area-inset-bottom));
+        right: 14px;
+        left: 14px;
+    }
+    .toast {
+        width: 100%;
+        font-size: 0.82rem;
+    }
+
+    /* Mobile Footer */
+    .app-footer {
+        padding: 14px 16px;
+        margin-bottom: 20px;
+    }
+    .footer-compact-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+    }
+    .footer-left {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .dev-title-row {
+        justify-content: center;
+    }
+    .footer-right {
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+    }
+    .footer-chips {
+        justify-content: center;
+    }
+}
+
+/* =====================================
+   SMALL PHONES (<= 480px)
+===================================== */
+@media (max-width: 480px) {
+    .brand-name {
+        font-size: 1.05rem;
+    }
+    .pro-badge {
+        font-size: 0.6rem;
+    }
+
+    .files-container.grid-view {
+        grid-template-columns: 1fr; /* Single column on very compact phones */
+    }
+
+    .files-container.list-view .file-card-preview {
+        width: 36px;
+        height: 36px;
+    }
+}
