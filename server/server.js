@@ -53,8 +53,9 @@ server.listen(PORT, "0.0.0.0", async () => {
     console.log("⚡ Works seamlessly on Windows, Mac, Linux, Android, iOS & Tablets.");
     console.log("Press Ctrl+C to stop the server anytime.\n");
 
-    // Automatically open local URL on host computer if not in headless/CI mode
-    if (process.env.AUTO_OPEN !== "false" && process.env.NODE_ENV !== "test") {
+    // Automatically open local URL on host computer if local desktop environment
+    const isCloudEnv = process.env.RAILWAY_ENVIRONMENT || process.env.RENDER || process.env.NODE_ENV === "production";
+    if (!isCloudEnv && process.env.AUTO_OPEN !== "false" && process.env.NODE_ENV !== "test") {
         try {
             await open(localUrl);
         } catch (e) {
