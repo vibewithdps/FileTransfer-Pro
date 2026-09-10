@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: filetransfer-pro
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTO_OPEN
+        value: "false"
+      - key: PORT
+        value: 10000
