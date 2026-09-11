@@ -23,6 +23,7 @@ const fileRoutes = require("./routes/fileRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const clipboardRoutes = require("./routes/clipboardRoutes");
 const networkRoutes = require("./routes/networkRoutes");
+const sessionRoutes = require("./routes/sessionRoutes");
 const chunkRoutes = require("./routes/chunkRoutes");
 
 const app = express();
@@ -91,6 +92,7 @@ app.use("/api/files", fileRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use("/api/clipboard", clipboardRoutes);
 app.use("/api/network", networkRoutes);
+app.use("/api/session", sessionRoutes);
 app.use("/api/chunks", chunkRoutes);
 
 // Health check

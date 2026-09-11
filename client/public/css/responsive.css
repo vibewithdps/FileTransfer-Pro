@@ -156,9 +156,41 @@
         font-size: 0.7rem;
     }
 
-    /* Show Mobile Bottom Navigation */
-    .mobile-bottom-nav {
-        display: flex;
+    /* Pairing Gateway Mobile Optimization */
+    .pairing-gateway {
+        padding: 24px 16px;
+        margin: 10px auto 24px auto;
+        border-radius: var(--radius-lg);
+    }
+    .gateway-title {
+        font-size: 1.35rem;
+    }
+    .gateway-desc {
+        font-size: 0.84rem;
+    }
+    .qr-radar-wrapper {
+        width: 220px;
+        height: 220px;
+    }
+    .qr-frame-glow {
+        width: 190px;
+        height: 190px;
+    }
+    .qr-radar-ring.ring-1 {
+        width: 210px;
+        height: 210px;
+    }
+    .qr-radar-ring.ring-2 {
+        width: 235px;
+        height: 235px;
+    }
+    .pin-code {
+        font-size: 1.55rem;
+        letter-spacing: 0.2em;
+    }
+    .pin-input-large {
+        font-size: 1.6rem;
+        letter-spacing: 0.25em;
     }
 
     .modal-card {

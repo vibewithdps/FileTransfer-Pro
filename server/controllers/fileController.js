@@ -1,7 +1,7 @@
 /*
 ==========================================================
     FileTransfer Pro v2
-    File Controller (Hybrid Offline LocalStore + MongoDB fallback)
+    File Controller (Session-Isolated Downloads & Listings)
 ==========================================================
 */
 
@@ -11,46 +11,65 @@ const fs = require("fs");
 const path = require("path");
 const mime = require("mime-types");
 const localStore = require("../utils/localStore");
+const sessionManager = require("../utils/sessionManager");
 
-// Helper to get socket.io instance
 function getSocketIO() {
     try {
-        const socketModule = require("../sockets/socket");
-        return socketModule;
+        return require("../sockets/socket");
     } catch (e) {
         return null;
     }
 }
 
 // =====================================
-// GET ALL FILES
+// GET FILES (SESSION-AWARE)
 // =====================================
 exports.getFiles = async (req, res) => {
     try {
-        let files = localStore.getAllFiles();
+        const sessionId = req.headers["x-session-id"] || req.query.session;
+        const sessionToken = req.headers["x-session-token"] || req.query.token;
         const { q, category } = req.query;
+
+        let files = [];
+
+        // If in session mode, ONLY return files belonging to this private session!
+        if (sessionId) {
+            if (!sessionManager.validateSession(sessionId, sessionToken)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Unauthorized: Invalid or expired session credentials"
+                });
+            }
+            files = sessionManager.getSessionFiles(sessionId);
+        } else {
+            // If someone is outside any session, return empty or only unassigned files
+            // To ensure strict privacy as requested by user, don't expose private session files!
+            files = [];
+        }
 
         // Category filter
         if (category && category !== "all") {
-            files = files.filter(f => f.category.toLowerCase() === category.toLowerCase());
+            files = files.filter(f => f.category && f.category.toLowerCase() === category.toLowerCase());
         }
 
         // Search query filter
         if (q && q.trim()) {
             const query = q.trim().toLowerCase();
             files = files.filter(f => 
-                f.name.toLowerCase().includes(query) || 
-                f.originalName.toLowerCase().includes(query)
+                (f.name && f.name.toLowerCase().includes(query)) || 
+                (f.originalName && f.originalName.toLowerCase().includes(query))
             );
         }
 
-        const stats = localStore.getStorageStats();
+        let totalSize = 0;
+        files.forEach(f => totalSize += (f.size || 0));
 
         res.status(200).json({
             success: true,
             count: files.length,
-            total: stats.totalFiles,
-            stats,
+            total: files.length,
+            totalSize,
+            formattedTotalSize: localStore.formatBytes(totalSize),
             files
         });
     } catch (error) {
@@ -100,7 +119,7 @@ exports.getFile = async (req, res) => {
 };
 
 // =====================================
-// DOWNLOAD FILE (WITH RANGE STREAMING)
+// DOWNLOAD FILE (ATTACHMENT)
 // =====================================
 exports.downloadFile = async (req, res) => {
     try {
@@ -141,7 +160,6 @@ exports.previewFile = async (req, res) => {
         const mimeType = mime.lookup(filename) || "application/octet-stream";
         const range = req.headers.range;
 
-        // Support HTTP Range requests (crucial for video/audio seeking on iOS & Android)
         if (range) {
             const parts = range.replace(/bytes=/, "").split("-");
             const start = parseInt(parts[0], 10);
@@ -194,8 +212,8 @@ exports.renameFile = async (req, res) => {
         }
 
         const cleanNewName = localStore.renameFile(oldName, newName.trim());
+        const sessionId = sessionManager.renameFileInSession(oldName, cleanNewName);
 
-        // Notify connected clients via Socket
         const socket = getSocketIO();
         if (socket && typeof socket.fileRenamed === "function") {
             socket.fileRenamed(oldName, cleanNewName);
@@ -222,8 +240,8 @@ exports.deleteFile = async (req, res) => {
     try {
         const filename = path.basename(req.params.name);
         localStore.deleteFile(filename);
+        const sessionId = sessionManager.removeFileFromSession(filename);
 
-        // Notify connected clients via Socket
         const socket = getSocketIO();
         if (socket && typeof socket.fileDeleted === "function") {
             socket.fileDeleted(filename);

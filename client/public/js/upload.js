@@ -114,6 +114,12 @@ const Uploader = {
         xhr.open("POST", "/api/upload", true);
         xhr.setRequestHeader("x-client-device", navigator.userAgent.includes("Mobile") ? "Mobile Device" : "Computer");
 
+        // Pass private paired session credentials
+        if (window.App && window.App.session && window.App.session.id) {
+            xhr.setRequestHeader("x-session-id", window.App.session.id);
+            xhr.setRequestHeader("x-session-token", window.App.session.token);
+        }
+
         const uploadObj = {
             id: uploadId,
             xhr,

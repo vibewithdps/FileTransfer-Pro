@@ -131,12 +131,33 @@ const UI = {
     ========================================== */
     async loadFiles() {
         try {
-            const res = await fetch("/api/files");
+            const headers = {};
+            if (window.App && window.App.session && window.App.session.id) {
+                headers["x-session-id"] = window.App.session.id;
+                headers["x-session-token"] = window.App.session.token;
+            }
+
+            const res = await fetch("/api/files", { headers });
             const data = await res.json();
             if (!data.success) return;
 
             this.allFiles = data.files || [];
-            this.updateStats(data.stats);
+            
+            const stats = data.stats || {
+                totalFiles: this.allFiles.length,
+                totalSize: data.totalSize || 0,
+                formattedTotalSize: data.formattedTotalSize || "0 Bytes",
+                categories: {
+                    image: this.allFiles.filter(f => f.category === 'image').length,
+                    video: this.allFiles.filter(f => f.category === 'video').length,
+                    audio: this.allFiles.filter(f => f.category === 'audio').length,
+                    document: this.allFiles.filter(f => f.category === 'document').length,
+                    archive: this.allFiles.filter(f => f.category === 'archive').length,
+                    other: this.allFiles.filter(f => !['image','video','audio','document','archive'].includes(f.category)).length
+                }
+            };
+
+            this.updateStats(stats);
             this.renderFiles();
         } catch (err) {
             console.error("Load files error:", err);
@@ -418,7 +439,13 @@ const UI = {
         if (!confirm(`Are you sure you want to delete "${filename}"?`)) return;
 
         try {
-            const res = await fetch(`/api/files/${encodeURIComponent(filename)}`, { method: "DELETE" });
+            const headers = {};
+            if (window.App && window.App.session && window.App.session.id) {
+                headers["x-session-id"] = window.App.session.id;
+                headers["x-session-token"] = window.App.session.token;
+            }
+
+            const res = await fetch(`/api/files/${encodeURIComponent(filename)}`, { method: "DELETE", headers });
             const data = await res.json();
             if (data.success) {
                 App.showToast(`Deleted ${filename}`, "info");
@@ -450,9 +477,15 @@ const UI = {
         if (!newName) return;
 
         try {
+            const headers = { "Content-Type": "application/json" };
+            if (window.App && window.App.session && window.App.session.id) {
+                headers["x-session-id"] = window.App.session.id;
+                headers["x-session-token"] = window.App.session.token;
+            }
+
             const res = await fetch(`/api/files/${encodeURIComponent(this.currentRenameFile)}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers,
                 body: JSON.stringify({ newName })
             });
             const data = await res.json();
@@ -506,9 +539,16 @@ const UI = {
                 if (!text) return;
 
                 try {
-                    const res = await fetch("/api/clipboard", {
+                    const hasSession = window.App && window.App.session && window.App.session.id;
+                    const url = hasSession ? `/api/session/${window.App.session.id}/clipboard` : "/api/clipboard";
+                    const headers = { "Content-Type": "application/json" };
+                    if (hasSession) {
+                        headers["x-session-token"] = window.App.session.token;
+                    }
+
+                    const res = await fetch(url, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers,
                         body: JSON.stringify({
                             text,
                             sender: navigator.userAgent.includes("Mobile") ? "Mobile" : "Desktop"
@@ -518,7 +558,7 @@ const UI = {
                     if (data.success) {
                         input.value = "";
                         charCount.textContent = "0 characters";
-                        App.showToast("Sent to all devices!", "success");
+                        App.showToast("Sent to paired device!", "success");
                         App.playSound("success");
                         this.loadClipboard();
                     }
@@ -531,29 +571,37 @@ const UI = {
 
     async loadClipboard() {
         try {
-            const res = await fetch("/api/clipboard");
+            const hasSession = window.App && window.App.session && window.App.session.id;
+            const url = hasSession ? `/api/session/${window.App.session.id}/clipboard` : "/api/clipboard";
+            const headers = {};
+            if (hasSession) {
+                headers["x-session-token"] = window.App.session.token;
+            }
+
+            const res = await fetch(url, { headers });
             const data = await res.json();
             if (!data.success) return;
 
+            const items = data.items || [];
             const badge = document.getElementById("catBadgeClip");
-            if (badge) badge.textContent = data.items.length;
+            if (badge) badge.textContent = items.length;
 
             const historyContainer = document.getElementById("clipboardHistory");
             if (!historyContainer) return;
 
             historyContainer.innerHTML = "";
 
-            if (data.items.length === 0) {
+            if (items.length === 0) {
                 historyContainer.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--text-sub);">
                         <p>No shared clipboard items yet.</p>
-                        <p style="font-size: 0.8rem; margin-top: 4px;">Paste any text, OTP, or link above to sync across devices!</p>
+                        <p style="font-size: 0.8rem; margin-top: 4px;">Paste any text, OTP, or link above to sync across paired devices!</p>
                     </div>
                 `;
                 return;
             }
 
-            data.items.forEach(item => {
+            items.forEach(item => {
                 const itemEl = document.createElement("div");
                 itemEl.className = "clip-item";
                 const timeStr = new Date(item.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -581,7 +629,14 @@ const UI = {
 
     async deleteClipboardItem(id) {
         try {
-            await fetch(`/api/clipboard/${id}`, { method: "DELETE" });
+            const hasSession = window.App && window.App.session && window.App.session.id;
+            const url = hasSession ? `/api/session/${window.App.session.id}/clipboard/${id}` : `/api/clipboard/${id}`;
+            const headers = {};
+            if (hasSession) {
+                headers["x-session-token"] = window.App.session.token;
+            }
+
+            await fetch(url, { method: "DELETE", headers });
             this.loadClipboard();
         } catch (e) {}
     },
@@ -699,11 +754,12 @@ const UI = {
             });
         }
 
-        if (mobNavQR) {
-            mobNavQR.addEventListener("click", () => {
-                activateMobBtn(mobNavQR);
-                const qrBtn = document.getElementById("qrBtn");
-                if (qrBtn) qrBtn.click();
+        const mobNavDisconnect = document.getElementById("mobNavDisconnect");
+        if (mobNavDisconnect) {
+            mobNavDisconnect.addEventListener("click", () => {
+                if (window.App && typeof App.promptEndSession === "function") {
+                    App.promptEndSession();
+                }
             });
         }
     }
